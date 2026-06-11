@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const midY = cakeRect.top / 2;
 
     const msg = document.createElement("div");
-    msg.textContent = "Happy Birthday, Chiara!";
+    msg.textContent = "Buon Compleano, Chiara!";
     msg.style.cssText = `
     position: fixed;
     left: 50%;
@@ -81,7 +81,8 @@ document.addEventListener("DOMContentLoaded", function () {
     transform: translateX(-50%);
     font-size: 2rem;
     font-weight: bold;
-    color: #e91e8c;
+    font-family: 'Pacifico', cursive;
+    color: #c80e74;
     pointer-events: none;
     transition: opacity 0.5s;
     opacity: 1;
