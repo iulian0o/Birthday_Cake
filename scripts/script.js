@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
   const cake = document.querySelector(".cake");
   let candles = [];
+  let lastCandleTime = 0;
+  const COOLDOWN_MS = 1500;
   let analyser;
   let audioContext;
   let microphone;
@@ -19,7 +21,8 @@ document.addEventListener("DOMContentLoaded", function () {
     candles.push(candle);
   }
 
-  cake.addEventListener("click", function (event) {
+ cake.addEventListener("click", function (event) {
+  const now = Date.now();
   const icing = document.querySelector(".icing");
   const icingRect = icing.getBoundingClientRect();
   const cakeRect = cake.getBoundingClientRect();
@@ -35,6 +38,12 @@ document.addEventListener("DOMContentLoaded", function () {
   ) {
     return;
   }
+
+  if (now - lastCandleTime < COOLDOWN_MS) {
+    return;
+  }
+
+  lastCandleTime = now;
 
   const left = clickX - cakeRect.left;
   const top = clickY - cakeRect.top;
@@ -55,18 +64,48 @@ document.addEventListener("DOMContentLoaded", function () {
     return average > 40;
   }
 
-  function blowOutCandles() {
-    let blownOut = 0;
+  function showBirthdayMessage() {
+  const cakeRect = cake.getBoundingClientRect();
+  const midY = cakeRect.top / 2;
 
-    if (isBlowing()) {
-      candles.forEach((candle) => {
-        if (!candle.classList.contains("out") && Math.random() > 0.5) {
-          candle.classList.add("out");
-          blownOut++;
-        }
-      });
+  const msg = document.createElement("div");
+  msg.textContent = "Happy Birthday, Chiara!";
+  msg.style.cssText = `
+    position: fixed;
+    left: 50%;
+    top: ${midY}px;
+    transform: translateX(-50%);
+    font-size: 2rem;
+    font-weight: bold;
+    color: #e91e8c;
+    pointer-events: none;
+    transition: opacity 0.5s;
+    opacity: 1;
+  `;
+
+  document.body.appendChild(msg);
+
+  setTimeout(() => {
+    msg.style.opacity = "0";
+    setTimeout(() => msg.remove(), 500);
+  }, 5000);
+}
+
+  function blowOutCandles() {
+  if (isBlowing()) {
+    candles.forEach((candle) => {
+      if (!candle.classList.contains("out") && Math.random() > 0.5) {
+        candle.classList.add("out");
+      }
+    });
+
+    const allOut = candles.length > 0 && candles.every((c) => c.classList.contains("out"));
+
+    if (allOut) {
+      showBirthdayMessage();
     }
   }
+}
 
   if (navigator.mediaDevices.getUserMedia) {
     navigator.mediaDevices
