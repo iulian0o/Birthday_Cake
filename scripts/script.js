@@ -19,13 +19,12 @@ document.addEventListener("DOMContentLoaded", function () {
     candles.push(candle);
   }
 
-  cake.addEventListener("click", function(event) {
+  cake.addEventListener("click", function (event) {
     const rect = cake.getBoundingClientRect();
     const left = event.clientX - rect.left;
     const top = event.clientY - rect.top;
 
     addCandle(left, top);
-
   });
 
   function isBlowing() {
@@ -41,5 +40,36 @@ document.addEventListener("DOMContentLoaded", function () {
     let average = sum / bufferLenght;
 
     return average > 40;
+  }
+
+  function blowOutCandles() {
+    let blownOut = 0;
+
+    if (isBlowing()) {
+      candles.forEach((candle) => {
+        if (!candle.classList.contains("out") && Math.random() > 0.5) {
+          candle.classList.add("out");
+          blownOut++;
+        }
+      });
+    }
+  }
+
+  if (navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then(function (stream) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        microphone = audioContext.createMediaStreamSource(stream);
+        microphone.connect(analyser);
+        analyser.fftSize = 256;
+        setInterval(blowOutCandles, 200);
+      })
+      .catch(function (err) {
+        console.log("Unable to acess micrphone: " + err);
+      });
+  } else {
+    console.log("getUserMedia not supported on your borwser");
   }
 });
