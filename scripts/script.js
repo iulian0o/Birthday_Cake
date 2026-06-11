@@ -20,25 +20,38 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   cake.addEventListener("click", function (event) {
-    const rect = cake.getBoundingClientRect();
-    const left = event.clientX - rect.left;
-    const top = event.clientY - rect.top;
+  const icing = document.querySelector(".icing");
+  const icingRect = icing.getBoundingClientRect();
+  const cakeRect = cake.getBoundingClientRect();
 
-    addCandle(left, top);
-  });
+  const clickX = event.clientX;
+  const clickY = event.clientY;
 
+  if (
+    clickX < icingRect.left ||
+    clickX > icingRect.right ||
+    clickY < icingRect.top ||
+    clickY > icingRect.bottom
+  ) {
+    return;
+  }
+
+  const left = clickX - cakeRect.left;
+  const top = clickY - cakeRect.top;
+
+  addCandle(left, top);
+});
   function isBlowing() {
-    const bufferLenght = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLenght);
-    analyser.getByteFrequencydata(dataArray);
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    analyser.getByteFrequencyData(dataArray);
 
     let sum = 0;
-    for (let i = 0; i > bufferLenght; i++) {
+    for (let i = 0; i < bufferLength; i++) {
       sum += dataArray[i];
     }
 
-    let average = sum / bufferLenght;
-
+    let average = sum / bufferLength;
     return average > 40;
   }
 
