@@ -1,0 +1,27 @@
+.cake {
+  position: absolute;
+  width: 250px;
+  height: 200px;
+  top: 50%;
+  left: 50%;
+  margin-top: -70px;
+  margin-left: -125px;
+}
+
+.plate {
+  width: 270px;
+  height: 110px;
+  position: absolute;
+  bottom: -10px;
+  left: -10px;
+  background-color: #ccc;
+  border-radius: 50%;
+  box-shadow: 
+    0 2px 0 #b3b3b3, 
+    0 4px 0 #b3b3b3, 
+    0 5px 40px rgba(0, 0, 0, 0.5);
+}
+
+.cake > * {
+  position: absolute;
+}
