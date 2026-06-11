@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const cake = document.querySelector(".cake");
   let candles = [];
   let lastCandleTime = 0;
-  const COOLDOWN_MS = 1500;
+  const COOLDOWN_MS = 2000;
   let analyser;
   let audioContext;
   let microphone;
@@ -21,56 +21,60 @@ document.addEventListener("DOMContentLoaded", function () {
     candles.push(candle);
   }
 
- cake.addEventListener("click", function (event) {
-  const now = Date.now();
-  const icing = document.querySelector(".icing");
-  const icingRect = icing.getBoundingClientRect();
-  const cakeRect = cake.getBoundingClientRect();
+  cake.addEventListener("click", function (event) {
+    const now = Date.now();
+    const icing = document.querySelector(".icing");
+    const icingRect = icing.getBoundingClientRect();
+    const cakeRect = cake.getBoundingClientRect();
 
-  const clickX = event.clientX;
-  const clickY = event.clientY;
+    const clickX = event.clientX;
+    const clickY = event.clientY;
 
-  if (
-    clickX < icingRect.left ||
-    clickX > icingRect.right ||
-    clickY < icingRect.top ||
-    clickY > icingRect.bottom
-  ) {
-    return;
-  }
+    if (
+      clickX < icingRect.left ||
+      clickX > icingRect.right ||
+      clickY < icingRect.top ||
+      clickY > icingRect.bottom
+    ) {
+      return;
+    }
 
-  if (now - lastCandleTime < COOLDOWN_MS) {
-    return;
-  }
+    if (now - lastCandleTime < COOLDOWN_MS) {
+      return;
+    }
 
-  lastCandleTime = now;
+    lastCandleTime = now;
 
-  const left = clickX - cakeRect.left;
-  const top = clickY - cakeRect.top;
+    const left = clickX - cakeRect.left;
+    const top = clickY - cakeRect.top;
 
-  addCandle(left, top);
-});
+    addCandle(left, top);
+  });
   function isBlowing() {
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
     analyser.getByteFrequencyData(dataArray);
 
-    let sum = 0;
-    for (let i = 0; i < bufferLength; i++) {
-      sum += dataArray[i];
-    }
+    const lowFreqBins = Math.floor(bufferLength * 0.1);
+    const lowFreqData = dataArray.slice(0, lowFreqBins);
 
-    let average = sum / bufferLength;
-    return average > 40;
+    const lowFreqAverage =
+      lowFreqData.reduce((sum, val) => sum + val, 0) / lowFreqBins;
+
+    const highFreqData = dataArray.slice(lowFreqBins);
+    const highFreqAverage =
+      highFreqData.reduce((sum, val) => sum + val, 0) / highFreqData.length;
+
+    return lowFreqAverage > 100 && highFreqAverage < 60;
   }
 
   function showBirthdayMessage() {
-  const cakeRect = cake.getBoundingClientRect();
-  const midY = cakeRect.top / 2;
+    const cakeRect = cake.getBoundingClientRect();
+    const midY = cakeRect.top / 2;
 
-  const msg = document.createElement("div");
-  msg.textContent = "Happy Birthday, Chiara!";
-  msg.style.cssText = `
+    const msg = document.createElement("div");
+    msg.textContent = "Happy Birthday, Chiara!";
+    msg.style.cssText = `
     position: fixed;
     left: 50%;
     top: ${midY}px;
@@ -83,29 +87,30 @@ document.addEventListener("DOMContentLoaded", function () {
     opacity: 1;
   `;
 
-  document.body.appendChild(msg);
+    document.body.appendChild(msg);
 
-  setTimeout(() => {
-    msg.style.opacity = "0";
-    setTimeout(() => msg.remove(), 500);
-  }, 5000);
-}
+    setTimeout(() => {
+      msg.style.opacity = "0";
+      setTimeout(() => msg.remove(), 500);
+    }, 5000);
+  }
 
   function blowOutCandles() {
-  if (isBlowing()) {
-    candles.forEach((candle) => {
-      if (!candle.classList.contains("out") && Math.random() > 0.5) {
-        candle.classList.add("out");
+    if (isBlowing()) {
+      candles.forEach((candle) => {
+        if (!candle.classList.contains("out") && Math.random() > 0.5) {
+          candle.classList.add("out");
+        }
+      });
+
+      const allOut =
+        candles.length > 0 && candles.every((c) => c.classList.contains("out"));
+
+      if (allOut) {
+        showBirthdayMessage();
       }
-    });
-
-    const allOut = candles.length > 0 && candles.every((c) => c.classList.contains("out"));
-
-    if (allOut) {
-      showBirthdayMessage();
     }
   }
-}
 
   if (navigator.mediaDevices.getUserMedia) {
     navigator.mediaDevices
@@ -115,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function () {
         analyser = audioContext.createAnalyser();
         microphone = audioContext.createMediaStreamSource(stream);
         microphone.connect(analyser);
-        analyser.fftSize = 256;
+        analyser.fftSize = 8192;
         setInterval(blowOutCandles, 200);
       })
       .catch(function (err) {
